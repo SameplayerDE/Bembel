@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Bembel;
 
@@ -7,6 +8,7 @@ public class Scene
 {
     public string SceneName { get; private set; }
     protected ContentManager Content;
+    protected GraphicsDevice GraphicsDevice;
     public Game Game;
     public List<SceneObject> SceneObjects { get; private set; }
 
@@ -14,6 +16,7 @@ public class Scene
     {
         SceneName = name;
         Game = game;
+        GraphicsDevice = game.GraphicsDevice;
         SceneObjects = new List<SceneObject>();
         Content = new ContentManager(Game.Services, "Content");
     }
