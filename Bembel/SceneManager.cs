@@ -132,7 +132,7 @@ public class SceneManager
         if (Current == null)
             return;
             
-        RenderContext.SpriteBatch.Begin(samplerState: SamplerState.PointClamp);
+        RenderContext.SpriteBatch.Begin();
         Current.Draw(RenderContext, gameTime, delta);
         RenderContext.SpriteBatch.End();
     }

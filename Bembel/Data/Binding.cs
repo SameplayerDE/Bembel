@@ -9,9 +9,9 @@ public class Binding<T>(T initialValue)
         {
             if (Equals(initialValue, value)) return;
             initialValue = value;
-            ValueChanged?.Invoke(value);
+            ValueChanged?.Invoke();
         }
     }
 
-    public event Action<T>? ValueChanged;
+    public event Action? ValueChanged;
 }

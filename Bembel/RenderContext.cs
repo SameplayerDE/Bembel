@@ -25,6 +25,11 @@ public class RenderContext
         SpriteBatch.DrawString(font, text, position, tint);
     }
     
+    public void DrawText(SpriteFont font, string text, Point position, Color tint)
+    {
+        SpriteBatch.DrawString(font, text, position.ToVector2(), tint);
+    }
+    
     public void DrawTexture(Texture2D texture, Vector2 position)
     {
         SpriteBatch.Draw(texture, position, Color.White);

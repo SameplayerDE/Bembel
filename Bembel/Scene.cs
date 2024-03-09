@@ -21,6 +21,11 @@ public class Scene
         Content = new ContentManager(Game.Services, "Content");
     }
 
+    protected void Exit()
+    {
+        Game.Exit();
+    }
+    
     public override bool Equals(object? obj)
     {
         return obj is Scene scene && SceneName.Equals(scene.SceneName);
