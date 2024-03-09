@@ -132,9 +132,9 @@ public class SceneManager
         if (Current == null)
             return;
             
-        RenderContext.SpriteBatch.Begin();
+        //RenderContext.SpriteBatch.Begin();
         Current.Draw(RenderContext, gameTime, delta);
-        RenderContext.SpriteBatch.End();
+        //RenderContext.SpriteBatch.End();
     }
         
 }
