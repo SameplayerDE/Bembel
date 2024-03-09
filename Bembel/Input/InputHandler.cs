@@ -106,6 +106,11 @@ public class InputHandler
     {
         return _currMousePosition;
     }
+    
+    public Point GetPrevMousePosition()
+    {
+        return _prevMousePosition;
+    }
 
     public Point GetMouseDelta()
     {

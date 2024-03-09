@@ -142,7 +142,7 @@ public class UserInterfaceRenderer
         if (node.Type == UserInterfaceNodeType.Label)
         {
             var label = (Label)node;
-            context.SpriteBatch.DrawString(Fonts[label.Font], Convert.ToString(label.Text) ?? "", new Vector2(label.X, label.Y), Color.White);
+            context.SpriteBatch.DrawString(Fonts[label.Font], Convert.ToString(label.Text) ?? "", new Vector2(label.X, label.Y), label.Tint);
         }
     }
     
@@ -160,7 +160,17 @@ public class UserInterfaceRenderer
 
             if (labelRect.Contains(inputHandler.GetMousePosition()) && inputHandler.IsLeftMousePressed())
             {
-                label.Invoke();
+                label.Click?.Invoke(label);
+            }
+            
+            if (labelRect.Contains(inputHandler.GetMousePosition()) && !labelRect.Contains(inputHandler.GetPrevMousePosition()))
+            {
+                label.Enter?.Invoke(label);
+            }
+            
+            if (!labelRect.Contains(inputHandler.GetMousePosition()) && labelRect.Contains(inputHandler.GetPrevMousePosition()))
+            {
+                label.Leave?.Invoke(label);
             }
         }
         

@@ -6,12 +6,12 @@ namespace Bembel.UserInterface;
 public class UserInterfaceFileReader
 {
     private XmlDocument _document;
-    private Dictionary<string, Action> _clickActions;
+    private Dictionary<string, Action<UserInterfaceNode>> _clickActions;
 
     public UserInterfaceFileReader()
     {
         _document = new XmlDocument();
-        _clickActions = new Dictionary<string, Action>();
+        _clickActions = new Dictionary<string, Action<UserInterfaceNode>>();
     }
 
     public UserInterfaceNode ReadFromFile(string path)
@@ -21,7 +21,7 @@ public class UserInterfaceFileReader
         return ParseNode(rootNode);
     }
 
-    public void AddClickAction(string functionName, Action action)
+    public void AddClickAction(string functionName, Action<UserInterfaceNode> action)
     {
         _clickActions[functionName] = action;
     }
@@ -100,8 +100,58 @@ public class UserInterfaceFileReader
                 var method = GetType().GetMethod(functionName, BindingFlags.NonPublic | BindingFlags.Instance);
                 if (method != null)
                 {
-                    var action = (Action)Delegate.CreateDelegate(typeof(Action), this, method);
+                    var action = (Action<UserInterfaceNode>)Delegate.CreateDelegate(typeof(Action), this, method);
                     label.OnClick(action);
+                }
+                else
+                {
+                    Console.WriteLine(
+                        $"Warning: The method '{functionName}' for the label '{label.Text}' was not found.");
+                }
+            }
+            if (attribute.Name == "OnEnter")
+            {
+                var functionName = attribute.Value;
+                if (_clickActions.ContainsKey(functionName))
+                {
+                    label.OnEnter(_clickActions[functionName]);
+                }
+                else
+                {
+                    Console.WriteLine(
+                        $"Warning: The method '{functionName}' for the label '{label.Text}' was not found.");
+                }
+
+                var method = GetType().GetMethod(functionName, BindingFlags.NonPublic | BindingFlags.Instance);
+                if (method != null)
+                {
+                    var action = (Action<UserInterfaceNode>)Delegate.CreateDelegate(typeof(Action), this, method);
+                    label.OnEnter(action);
+                }
+                else
+                {
+                    Console.WriteLine(
+                        $"Warning: The method '{functionName}' for the label '{label.Text}' was not found.");
+                }
+            }
+            if (attribute.Name == "OnLeave")
+            {
+                var functionName = attribute.Value;
+                if (_clickActions.ContainsKey(functionName))
+                {
+                    label.OnLeave(_clickActions[functionName]);
+                }
+                else
+                {
+                    Console.WriteLine(
+                        $"Warning: The method '{functionName}' for the label '{label.Text}' was not found.");
+                }
+
+                var method = GetType().GetMethod(functionName, BindingFlags.NonPublic | BindingFlags.Instance);
+                if (method != null)
+                {
+                    var action = (Action<UserInterfaceNode>)Delegate.CreateDelegate(typeof(Action), this, method);
+                    label.OnLeave(action);
                 }
                 else
                 {
