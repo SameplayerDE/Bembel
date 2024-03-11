@@ -35,17 +35,14 @@ namespace Bembel;
         public static void UpdateDefaultCamera()
         {
             var (width, height) = GraphicsDevice.Viewport.Bounds.Size.ToVector2();
-            var viewPosition = new Vector3(width, height, 0) / 2;
-
-            PrimitiveRenderer.World =
-                Matrix.CreateWorld(new Vector3(GraphicsDevice.Viewport.Bounds.Center.ToVector2(), 0), Vector3.Forward,
-                    Vector3.Up);
-            PrimitiveRenderer.View = Matrix.CreateLookAt(
-                ViewOffset + viewPosition + Vector3.Backward,
-                ViewOffset + viewPosition + Vector3.Forward,
+            
+            World = Matrix.Identity;
+            View = Matrix.CreateLookAt(
+                ViewOffset + Vector3.Backward,
+                ViewOffset + Vector3.Forward,
                 Vector3.Up
             );
-            PrimitiveRenderer.Projection = Matrix.CreateOrthographic(
+            Projection = Matrix.CreateOrthographic(
                 width * Scale,
                 -height * Scale,
                 0.1f, 10f
