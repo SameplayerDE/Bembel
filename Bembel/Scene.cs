@@ -31,13 +31,15 @@ public class Scene
         return obj is Scene scene && SceneName.Equals(scene.SceneName);
     }
 
-    public void AddSceneObject(SceneObject sceneObject)
+    public T AddSceneObject<T>(T sceneObject) where T : SceneObject
     {
         if (!SceneObjects.Contains(sceneObject))
         {
             sceneObject.Scene = this;
             SceneObjects.Add(sceneObject);
+            return sceneObject;
         }
+        return null;
     }
 
     public void RemoveSceneObject(SceneObject sceneObject)
