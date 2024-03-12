@@ -4,5 +4,6 @@ public enum UserInterfaceNodeType
 {
     HStack,
     VStack,
-    Label
+    Label,
+    Spacer
 }

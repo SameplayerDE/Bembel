@@ -1,5 +1,8 @@
+using System.Net;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Xml;
+using Bembel.Data;
 
 namespace Bembel.UserInterface;
 
@@ -7,11 +10,13 @@ public class UserInterfaceFileReader
 {
     private XmlDocument _document;
     private Dictionary<string, Action<UserInterfaceNode>> _clickActions;
+    private Dictionary<string, Binding<object>> _textBindings;
 
     public UserInterfaceFileReader()
     {
         _document = new XmlDocument();
         _clickActions = new Dictionary<string, Action<UserInterfaceNode>>();
+        _textBindings = new();
     }
 
     public UserInterfaceNode ReadFromFile(string path)
@@ -25,6 +30,11 @@ public class UserInterfaceFileReader
     {
         _clickActions[functionName] = action;
     }
+    
+    public void AddTextBinding(string bindingName, Binding<object> binding)
+    {
+        _textBindings[bindingName] = binding;
+    }
 
     private UserInterfaceNode ParseNode(XmlNode node)
     {
@@ -33,10 +43,23 @@ public class UserInterfaceFileReader
             "HStack" => ParseHStack(node),
             "VStack" => ParseVStack(node),
             "Label" => ParseLabel(node),
+            "Spacer" => new Spacer(),
             _ => throw new ArgumentException($"Unknown node type: {node.Name}")
         };
-
+        ReadGeneralAttributes(ref userInterfaceNode, node);
         return userInterfaceNode;
+    }
+
+    private void ReadGeneralAttributes(ref UserInterfaceNode? userInterfaceNode, XmlNode node)
+    {
+        foreach (XmlAttribute attribute in node.Attributes)
+        {
+            if (attribute.Name == "Id" || attribute.Name == "Identification")
+            {
+                var idValue = attribute.Value;
+                userInterfaceNode.SetId(idValue);
+            }
+        }
     }
 
 
@@ -44,6 +67,8 @@ public class UserInterfaceFileReader
     {
         var stack = new HStack();
 
+        ReadStackAttributes<HStack>(ref stack, node);
+        
         foreach (XmlNode childNode in node.ChildNodes)
         {
             var child = ParseNode(childNode);
@@ -57,6 +82,8 @@ public class UserInterfaceFileReader
     {
         var stack = new VStack();
 
+        ReadStackAttributes<VStack>(ref stack, node);
+        
         foreach (XmlNode childNode in node.ChildNodes)
         {
             var child = ParseNode(childNode);
@@ -64,6 +91,46 @@ public class UserInterfaceFileReader
         }
 
         return stack;
+    }
+
+    private void ReadStackAttributes<T>(ref T stack, XmlNode node) where T : Stack
+    {
+        foreach (XmlAttribute attribute in node.Attributes)
+        {
+            if (attribute.Name == "Padding")
+            {
+                var paddingValue = attribute.Value;
+                var paddingValues = Array.ConvertAll(paddingValue.Split(" "), int.Parse);
+                stack.SetPadding(paddingValues);
+            }
+            if (attribute.Name == "Spacing")
+            {
+                var spacingValue = attribute.Value;
+                stack.SetSpacing(int.Parse(spacingValue));
+            }
+            if (attribute.Name == "Alignment")
+            {
+                var alignmentValue = attribute.Value;
+                switch (alignmentValue)
+                {
+                    case "Top":
+                        stack.SetAlignment(Alignment.Top);
+                        break;
+                    case "Right":
+                        stack.SetAlignment(Alignment.Right);
+                        break;
+                    case "Bottom":
+                        stack.SetAlignment(Alignment.Bottom);
+                        break;
+                    case "Left":
+                        stack.SetAlignment(Alignment.Left);
+                        break;
+                    case "Center":
+                        stack.SetAlignment(Alignment.Center);
+                        break;
+                }
+            }
+        }
     }
 
     public void PrintAllMethods()
@@ -75,21 +142,55 @@ public class UserInterfaceFileReader
             Console.WriteLine(method.Name);
         }
     }
-
+    
     private Label ParseLabel(XmlNode node)
     {
-        var label = new Label
+        var label = new Label();
+        var hasInnerText = false;
+        
+        if (!string.IsNullOrWhiteSpace(node.InnerText))
         {
-            Text = node.InnerText.Trim()
-        };
+            hasInnerText = true;
+            var textValue = node.InnerText;
+            label.Text = textValue;
+        }
+        
         foreach (XmlAttribute attribute in node.Attributes)
         {
+            if (attribute.Name == "Text")
+            {
+                if (hasInnerText)
+                {
+                    continue;
+                }
+                var textValue = attribute.Value;
+                if (!string.IsNullOrWhiteSpace(textValue))
+                {
+                    if (textValue.StartsWith($"@"))
+                    {
+                        var bindingKey = textValue[1..];
+                        bindingKey = bindingKey.ToLower();
+                        if (_textBindings.TryGetValue(bindingKey, out var value))
+                        {
+                            label.SetTextBinding(value);
+                        }
+                        else
+                        {
+                            throw new Exception("binding not found");
+                        }
+                    }
+                    else
+                    {
+                        label.Text = textValue;
+                    }
+                }
+            }
             if (attribute.Name == "OnClick")
             {
                 var functionName = attribute.Value;
-                if (_clickActions.ContainsKey(functionName))
+                if (_clickActions.TryGetValue(functionName, out var clickAction))
                 {
-                    label.OnClick(_clickActions[functionName]);
+                    label.OnClick(clickAction);
                 }
                 else
                 {

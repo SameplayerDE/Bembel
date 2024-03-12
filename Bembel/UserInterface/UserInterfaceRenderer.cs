@@ -32,11 +32,19 @@ public class UserInterfaceRenderer
             case UserInterfaceNodeType.Label:
                 CalculateLabelLayout((Label)node);
                 break;
+            case UserInterfaceNodeType.Spacer:
+                CalculateSpacerLayout((Spacer)node);
+                break;
             default:
                 throw new ArgumentException("Unknown UI node type.");
         }
     }
-    
+
+    private void CalculateSpacerLayout(Spacer node)
+    {
+        
+    }
+
     private void CalculateLabelLayout(Label node)
     {
         var label = (Label)node;
@@ -78,6 +86,27 @@ public class UserInterfaceRenderer
 
         stack.Width = maxWidth + stack.PaddingLeft + stack.PaddingRight;
         stack.Height = totalHeight;
+        
+        foreach (var child in stack.Children)
+        {
+            if (stack.Alignment == Alignment.Center)
+            {
+                if (child.Width < maxWidth)
+                {
+                    child.X = stack.X + stack.Width / 2 - child.Width / 2;
+                    CalculateLayout(child);
+                }
+            }
+            if (stack.Alignment == Alignment.Right)
+            {
+                if (child.Width < maxWidth)
+                {
+                    child.X = stack.X + stack.Width - child.Width;
+                    CalculateLayout(child);
+                }
+            }
+        }
+        
     }
     
     private void CalculateHStackLayout(HStack stack)
@@ -111,6 +140,21 @@ public class UserInterfaceRenderer
 
         stack.Height = maxHeight + stack.PaddingTop + stack.PaddingBottom;
         stack.Width = totalWidth;
+        
+        foreach (var child in stack.Children)
+        {
+            if (stack.Alignment == Alignment.Center)
+            {
+                if (child.Height < maxHeight)
+                {
+                    child.Y = stack.Y;
+                    child.Y += stack.Height / 2;
+                    child.Y -= child.Height / 2;
+                    CalculateLayout(child);
+                }
+            }
+        }
+        
     }
     
     public void Draw(UserInterfaceNode? node, RenderContext context, GameTime gameTime, float delta)
